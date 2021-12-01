@@ -41,6 +41,8 @@ def findDs(interval = (50,-50),pltD=False,endx=-1, startx = 220, filename = "flu
         axind = len(showplots)-1
         fig.tight_layout()
         labels = ["(a)","(b)","(c)","(d)"]
+        lowInt = findAv(Yvals[10,10:-10])
+        highInt = findAv(Yvals[-10,10:-10]) 
     for i in Xaxis:
         #  finds lowest and highest intensity that minimizes squared distance to data
         #  in the interval of interest, 30 outer points where concentration should be unaffectd by diffusion
@@ -55,14 +57,14 @@ def findDs(interval = (50,-50),pltD=False,endx=-1, startx = 220, filename = "flu
         pars, covs = curve_fit(conc,Yaxis,cRelative)
         Dt,X0 = pars[0], pars[1]
         D = Dt/avgtime(i)
-        if D > 10**(-9): #filter out outliers
-            Dlist.append(D)
-            sentinel+=1
+        #if D > 10**(-9): #filter out outliers
+        Dlist.append(D)
+        sentinel+=1
         if i+startx in showplots:
             X = channelStart-i-startx
             Y0 = Yaxis - X0
             axarr[axind].plot(-(Y0)*10**6,conc(Yaxis,Dt,X0), label = "Fit")
-            axarr[axind].plot([],[])
+            #axarr[axind].plot([],[])
             axarr[axind].plot(-(Y0)*10**6,cRelative, label = "Data")
             axarr[axind].text(2,0.01,labels[axind]+": $D "+f"= {round(D*10**12,0)}" + " \mathrm{\mu m^2 /s} $",fontsize=12) #\pm {round(np.sqrt(covs[0,0])*10**(12),0)}
             axarr[axind].legend()
@@ -70,6 +72,7 @@ def findDs(interval = (50,-50),pltD=False,endx=-1, startx = 220, filename = "flu
             axarr[axind].set_xlabel("Y coordinate [$\mathrm{\mu m}]$")
             axarr[axind].set_ylabel("Relative concentration")
             axind-=1
+    plt.show()
     if pltD:
         plt.plot(Xaxis[:sentinel],Dlist)
         fig, axs = plt.subplots(2,1)
@@ -128,10 +131,10 @@ def linearizeLuminocity(RGBarr: np.ndarray):
     return Y
 
 def avgtime(x):
-    pixlength = 500*10**(-6)/215 #meters per pixel
+    pixlength = 500*10**(-5)/215 #meters per pixel
     flowrate = 2*110/60 *10**(-9) # m^3 per sec
     crossArea = 75*10**(-6)*500*10**(-6) #m^2
-    xtrue = (channelStart-x)*pixlength
+    xtrue = (channelStart-x)*pixlength #x-axis is flipped.
     speed = flowrate/crossArea
     return xtrue/speed
 
@@ -149,8 +152,8 @@ def showimage(filename):
     plt.imshow(rotPic)
     plt.show()
 #showimage("fluidics\\110ul_4xBF_startCanal.tif")    
-findDs(interval=(60,-60),showplots=[160,325,490,555],startx=160, pltD=False,endx=650)# filename="fluidics\\Vik og Johansen.tif")
-#findDs(interval=(0,-1),showplots=[160,325,490,555],startx=160, pltD=False,endx=650)# filename="fluidics\\Vik og Johansen.tif")
+findDs(interval=(60,-60),showplots=[160,325,490,555],startx=160, pltD=True,endx=900)# filename="fluidics\\Vik og Johansen.tif")
+#findDs(interval=(60, -60),startx=160, pltD=False,endx=650)# filename="fluidics\\Vik og Johansen.tif")
 
 
 """for i in range(X):
